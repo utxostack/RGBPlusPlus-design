@@ -1,2 +1,12 @@
 # RGBPlusPlus-design
-RGB++ protocol early design documentation
+
+We put the early stage design papers of RGB++ protocol here for discussion. Please understand that, all the docs are very preliminary and not fully settled. 
+
+**Please don't treat these documentation as the final standard or implementation.**
+
+Documents list:
+
+| # | EN | CN |
+| -- | -- | -- |
+| 00 | RGB++ protocol whitepaper draft | [RGB++ 协议白皮书草案](./docs/light-paper-cn.md) |
+| 01 | RGB++ script standard | [RGB++ 合约规范](./docs/locscript-design-prd-cn.md) |
