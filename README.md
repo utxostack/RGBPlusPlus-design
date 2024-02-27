@@ -8,5 +8,5 @@ Documents list:
 
 | # | EN | CN |
 | -- | -- | -- |
-| 00 | RGB++ protocol whitepaper draft | [RGB++ 协议白皮书草案](./docs/light-paper-cn.md) |
+| 00 | [RGB++ protocol whitepaper draft](./docs/light-paper-en.md) | [RGB++ 协议白皮书草案](./docs/light-paper-cn.md) |
 | 01 | RGB++ script standard | [RGB++ 合约规范](./docs/locscript-design-prd-cn.md) |

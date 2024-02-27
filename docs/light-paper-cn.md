@@ -1,4 +1,4 @@
-# RGB++ Protocol Light Paper
+# RGB++ Protocol Light Paper (Draft)
 
 *Cipher from CELL Studio & Nervos Foundation*
 
@@ -145,6 +145,8 @@ RGB++ 的 NFT 资产发行也可以利用到 ckb 上现有的 NFT 协议，包�
 ## 转移
 
 RGB++ 中 NFT 的转让也非常简单，类似无须找零的 coins 转账。
+
+![transfer](./assets/wp-transfer.png)
 
 # 闪电网络联通
 
