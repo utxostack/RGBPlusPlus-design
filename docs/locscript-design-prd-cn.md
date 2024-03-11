@@ -1,7 +1,7 @@
 # RGB++ 合约规范
 
-Authors: Cipher Wang
-Contributors: CyberOrange, JJY, Ian, Jan
+Authors: Cipher Wang, JJY
+Contributors: CyberOrange, Ian, Jan
 
 # 概述
 
@@ -13,9 +13,7 @@ Contributors: CyberOrange, JJY, Ian, Jan
 - ckb_tx 的计算依赖所有的 cell 信息，后者依赖 btc_tx，如果 btc_tx.commitment 包含 ckb_tx，这就死锁了，因此，**commitment 只能包含 ckb tx 的部分信息**
     - 为了方便 ckb tx 更新手续费重发，commitment 中不应该包含 output[].capacity
 - Cell 的一个额外问题是，创建 cell 时，lock 脚本并不执行，因此如果没有额外的限制或约束，任何人都可以创建多个使用相同 btc_utxo 作为 lockargs 的 cell，形式上与同一个 btc utxo 绑定
-    - 所有这些 cell 显然只能有一个被解锁，因为 btc utxo 只能被使用一次，但它依然破坏了 cell <> btc_utxo 的一一绑定关系
-- 解决方案：在 cell 解锁时，额外验证这个 cell 的创建 tx 的 inputs 是否和之前的 btc 交易里面的 commitment 中的 ckb_tx.inputs 一致；这等于是**分别追溯之前的 btc 交易和 ckb 交易是否绑定**。优点是思路清晰，无须创建新资产，缺点是证明可能比较复杂
-- 既然解锁 RGB_lock 需要追溯上一笔 btc 交易和 ckb 交易是否绑定，那就意味着“第一笔 RGB++”交易是需要特殊处理的
+    - 但似乎多个 cell 于一个 btc_utxo 对应不会引入安全问题，因此我们允许这种情况出现
 
 # 合约需求
 
@@ -24,70 +22,125 @@ Contributors: CyberOrange, JJY, Ian, Jan
 - RGB_lock 用来处理与 BTC TX 的同构映射的 CELL 的解锁
 - BTC_TIME_lock，用来当资产从 L1 jump 到 L2 时进行锁定一定区块数再允许用户操作
 
-## 数据结构
+## 合约的 Config Cell
+
+RGB_lock / BTC_TIME_lock 合约需要读取轻节点 cells，因此我们必须保存相关合约的 type_hash。由于不希望引入硬编码的合约依赖，我们引入 Config Cell 的概念来解决此类配置问题。
+
+
+部署合约时要求合约输出以及 config cell 输出都在同一笔交易内完成部署。
+
+```yaml
+# BTC_TIME_lock
+inputs: any cells
+outputs:
+  BTC_TIME_lock code cell
+  time_lock_config cell
+...
+
+# RGB_lock
+inputs: any cells
+outputs:
+  RGB_lock code cell
+  rgb_lock_config cell
+...
+```
+合约通过以下方式找到 config cell
+
+```yaml
+1. load_script 找到目前的 合约的 type_hash
+2. 通过 type_hash 找到 cell dep 符合且 out_point.index == 1 的 cell deps 的 index
+3. load 这个 cell dep 的 data 即得到全局配置
+
+全局配置
+```
+
+```rust
+struct RGBPPConfig {
+  # Type hash of bitcoin light client
+  bitcoin_lc_type_hash: Byte32,
+  # Type hash of bitcoin time lock contract
+  bitcoin_time_lock_type_hash: Byte32,
+}
+```
+每次更新合约都必须和 config cell 一起更新，并且遵守更新规则。
+
+## 合约数据结构
+
+### RGB_lock
 
 ```yaml
 RGB_lock:
-	code_hash: 
-		RGB_lock
-	args:
-    	out_index | %bitcoin_tx%
+  code_hash: 
+    RGB_lock
+  args:
+      out_index | %bitcoin_tx%
 ```
 
 - RGB_lock:
     - out_index：指定一个可消费自己的 utxo 中的 index
     - bitcoin_tx: 指定一个可消费自己的 utxo 中的 btc_txid，该数值不包含在计算 commitment 内
 
+### BTC_TIME_lock
+
 ```yaml
 BTC_TIME_lock:
-	args: lock_hash | after | %new_bitcoin_tx%
+  args: lock_script | after | %new_bitcoin_tx%
 ```
 
 - BTC Time lock:
-    - lock_hash 为目标 lockscript 的 hash[:20]
+    - lock_script 为目标 lockscript
     - after 要求 new_bitcoin_tx 已经超过 after 个确认
-    - 解锁后的 cell 持有人的 lock 符合 lock_hash
+    - 解锁后的 cell 持有人的 lock 符合 lock_script
 
-## **RGB_Lock 解锁**逻辑
+## RGB_Lock 解锁逻辑
 
 <aside>
 💡 该 Lock 放在每一个 RGB++ 资产在 CKB 的映射 Cell 上，用于 L1 地址(btc_utxo)持有 RGB++ 资产
 </aside>
 
-```yaml
- lock.args: out_index | %bitcoin_tx%
-```
-**验证流程**
+**Cell 解锁验证流程**
 
 - 存在一个与当前 CKB TX 对应的 `btc_tx`，它满足：
     - 包含在 CKB 上的 BTC 轻客户端中
     - inputs 中包含一个与要解锁的 cell.lock 对应的 btc utxo input，即  `btc_tx.inputs[i] == previous_bitcoin_tx | out_index`
     - outputs 中有且仅有一个 OP_RETURN，包含 `commitment`
-- 该 `commitment` 为以下内容的 hash:
-    - `N_input`, `N_output`, 描述覆盖的 inputs/outputs 个数
-    - `CKB_TX.inputs[:]`, 前 `N_input` 个 inputs
-    - `CKB_TX.outputs_sub[:]`, 前 `N_output` 个 outputs 包含全部数据，除了
-      - 不包含`%new_bitcoin_tx% = btc_tx`，因为构造 `commitment` 的时候，尚无法计算出 `btc_tx` 的具体结果
-- 验证当前 Cell 本身的合法性(通过验证上一笔交易)
-    - 获取要解锁的 cell 的创建交易，记为`CKB_TX_previous`
-    - 通过该 cell 的 `lock.args` 找到 `previous_bitcoin_tx` 并提取其中的 `previous_bitcoin_tx.commitment` 记为 `commitment_previous`
-        - 似乎无须验证 `previous_bitcoin_tx` 是否存在于 btc 链上
-    - 验证 `commitment_previous` 包含 `CKB_TX_previous.inputs[:N_input]`
-    - 这样就确保了这个 cell 是由之前的 btc_tx 同构映射创建的，而不是用户随意创建的
-    
-![lockverify logics](./assets/lock-verify.png)
-    
+    - `self.lockargs.%new_bitcoin_tx% = btc_tx`
+- 该 `commitment`为一下内容的 hash，算法为 `double sha256(”RGB++” | messages)`
+  - `version: u16`，必须为 0
+  - `inputs_len:u8`
+    - 表示 commitments 包含前 n 个 inputs
+    - 必须 >= 1
+    - 所有 type 不为空的 input cell 必须被包含在 inputs_len 中
+  - `outputs_len:u8`
+    - 表示 commitments 包含前 n 个 outputs
+    - 必须 >= 1
+    - 所有 type 不为空的 output cell 必须被包含在 outputs_len 中
+  - `CKB_TX.inputs[:inputs_len]`
+  - `CKB_TX.outputs_sub[:outputs_len]`, 包含全部数据，除了
+    - 不包含 `lockargs.%new_bitcoin_tx% = btc_tx` 
+- 验证 L1 的资产仍然被 RGB++ 逻辑保护，即所有 outputs 中 type 不为空的 cells 必须使用以下两种 lock 之一
+  - RGB_lock
+  - BTC_TIME_lock
+      - 要求 `lockargs.after ≥ 6`
+      - 要求 `lockargs.new_bitcoin_tx == btc_tx`
+
+**tips**
+
+- 由最后一个有 type 的 input / output cell 的位置就可以计算出 inputs_len / outputs_len 值
+- 如果所有 inputs / outputs 都没有 type 则至少填 `1`，commitment 至少包含一个 input out point
+- SDK 增加手续费时可以在 commitment 之外的 cells 里增加，这样即使提交不成功也可以修改这个 cell。
 
 ## BTC_TIME_lock 解锁逻辑
 
 ```yaml
-lock.args: var | lock_hash | after | %new_bitcoin_tx%
+lock.args: lock_hash | after | %new_bitcoin_tx%
 ```
 
-- `var` 为 1 字节版本号，默认 0
-- `lock_hash` 为目标 lockscript 的 `hash[:20]`
-- after 要求 `new_bitcoin_tx` 已经超过 after 个 Bitcoin 区块确认
-- 解锁后的 cell 持有人的 lock 符合 `lock_hash`
+- lock_script 为解锁后需要释放到的目标接受者
+    - 解锁交易中每个 BTC_TIME_lock input 必须在相同 index 对应一个 output
+    - output 的 lock 为 lock_script 其余字段 type, data, capacity 需要和 input 一致
+- after 要求 new_bitcoin_tx 已经超过 after 个确认
+- 解锁后的 cell 持有人的 lock 符合 lock_script
 
 # 交易逻辑
 
@@ -98,36 +151,35 @@ lock.args: var | lock_hash | after | %new_bitcoin_tx%
 ```yaml
 # BTC_TX
 input:
-	btc_utxo_1  # =(previous_btc_tx | out_index)
-	...
+  btc_utxo_1  # =(previous_btc_tx | out_index)
+  ...
 output:
-	OP_RETURN: commitment
-	btc_utxo_3  # =(new_bitcoin_tx | out_index)
-	btc_utxo_4  # =(new_bitcoin_tx | out_index)
+  OP_RETURN: commitment
+  btc_utxo_3  # =(new_bitcoin_tx | out_index)
+  btc_utxo_4  # =(new_bitcoin_tx | out_index)
 
 # CKB_TX
 input:
-	rgb-xudt:
-		type:
-			code: xudt
-			code: RGB_type (only in Plan B, same follows)
-			args: <asset-id>
-		lock:
-			code: RGB_lock
-			args: btc_utxo_1 = (out_index | previous_btc_tx)
+  rgb-xudt:
+    type:
+      code: xudt
+      args: <asset-id>
+    lock:
+      code: RGB_lock
+      args: btc_utxo_1 = (out_index | previous_btc_tx)
 
 output:
-	xudt:
-		type: xudt
-		lock:
-			code: RGB_lock
-			args: out_index = 1 | %new_bitcoin_tx%
+  xudt:
+    type: xudt
+    lock:
+      code: RGB_lock
+      args: out_index = 1 | %new_bitcoin_tx%
 
-	xudt:
-		type: xudt
-		lock:
-			code: RGB_lock
-			args: out_index = 2 | %new_bitcoin_tx%
+  xudt:
+    type: xudt
+    lock:
+      code: RGB_lock
+      args: out_index = 2 | %new_bitcoin_tx%
 ```
 
 ## L1 → L2 Jump 操作
@@ -139,147 +191,160 @@ output:
 ```yaml
 # BTC_TX
 input:
-	btc_utxo_1
-	...
+  btc_utxo_1
+  ...
 output:
-	OP_RETURN: commitment
-	btc_utxo_3
+  OP_RETURN: commitment
+  btc_utxo_3
 
 # CKB_TX
 input:
-	rgb_xudt:
-		type: xudt
-		lock:
-			code: RGB_lock
-			args: out_index | source_tx
+  rgb_xudt:
+    type: xudt
+    lock:
+      code: RGB_lock
+      args: out_index | source_tx
 
 output:
-	rgb_xudt:
-		type: xudt
-		lock：
-			code: BTC_TIME_lock
-			args: lock_hash | after | %new_bitcoin_tx%
+  rgb_xudt:
+    type: xudt
+    lock：
+      code: BTC_TIME_lock
+      args: lock_script | after | %new_bitcoin_tx%
 
-	rgb_xudt:
-		type: xudt
-		lock:
-			code: RGB_lock
-			args: out_index=1 | %new_bitcoin_tx%
+  rgb_xudt:
+    type: xudt
+    lock:
+      code: RGB_lock
+      args: out_index=1 | %new_bitcoin_tx%
 ```
 
-- BTC_TIME_lock 解锁逻辑
-    - 要求自身 new_bitcoin_tx 超过 after 个 BTC 确认才能解锁
+等到足够多的 BTC 区块确认后，可以解锁 BTC_TIME_lock 的 cell
+
+```yaml
+# CKB_TX
+input:
+  rgb_xudt:
+    type: xudt
+    lock:
+      code: BTC_TIME_lock
+      args: lock_script | 6 | btc_tx
+
+output:
+  rgb_xudt:
+    type: xudt
+    lock:
+      lock_script
+
+witness:
+  # proof of 6 confirmations after #btx_tx
+```
 
 ## L2 → L1 Jump 操作
 
 **定义：输入侧没有 RGB_lock，输出侧有 RGB_lock**
 
 ```yaml
+# CKB TX
+input:
+  xudt:
+    type: xudt
+    lock:
+      ckb_address1
+
+output:
+  xudt:
+    type: xudt
+    lock:
+      ckb_address2
+
+  rgb_xudt:
+    type: xudt
+    lock:    
+      args: btc_utxo
+```
+**注意，这里不需要同构绑定**
+
+双花问题：
+
+- 建议应用方或用户在 CKB 交易 24 块确认后再执行后续的 RGB++ L1 交易
+- 否则可能因为 CKB TX 双花，导致上面 rgb_xudt(#btc_utxo) 被替换成其他输出
+    - 因此 dapp 设计上，L2→L1 的资产需要等 24 个 ckb 区块才能操作，不过仅限于前端限制
+
+# RGB++ 资产发行
+
+## 纯 L1 方式发行 RGB++ 资产
+
+使用 L1 方式发行 RGB++ 要求发行人使用 bitcoin 上的交易，utxo 或其他 id 作为身份标识符来发行资产，这样才可以做到无须 L2 辅助即可完全实现 CSV。具体发行方案有多种，我们这里列出两种简单方案。
+
+### 直接发行
+
+用户需要首先构造一个使用特定 utxo 做 lock 的 cell，作为发行人。该步骤无须经过同构绑定，后即可用这个 cell 进行一次性发行
+
+```yaml
 # BTC TX
 input:
-	...
+  btc_utxo#0
+  ...
 output:
-	OP_RETURN: commitment
-	btc_utxo
+  commitment
+  btc_utxo#1
+  ...
 
 # CKB TX
 input:
-	rgb_xudt:
-		type: xudt
-		lock:
-			ckb_address1
+  issue_cell:
+    RGB_lock:
+    args: btc_utxo#0
+      
+output:
+  xudt_cell:
+    data: amount
+    type: 
+      code: xudt
+      args: hash(RGB_lock|btc_utxo#0)
+    lock:
+      code: RGB_lock
+      args: btc_utxo#1
+```
+### 区块区间发行
+
+区块区间发行需要将 xudt 的发行模式从 lock 发行改为 type 发行，即创建一种新的 xudt，或插件，使得发行的 xudt 的 type.args，即资产 id 不是 lockhash，而是某些 btc 链的参数即可
+
+```yaml
+# BTC TX
+input:
+  btc_utxo#0
+  ...
+output:
+  commitment
+  btc_utxo#1
+  ...
+  
+# CKB TX
+input:
+  issue_cell:
+    RGB_lock:
+      args: btc_utxo#0
 
 output:
-	rgb_xudt:
-		type: xudt
-		lock:
-			ckb_address2
-
-	rgb_xudt:
-		type: xudt
-		lock:		
-			args: btc_utxo = (out_index | %new_bitcoin_tx%)
+  xudt_cell:
+    data: amount
+    type: 
+      code: xudt_modified
+      args: 
+        hash_of:
+          start_block,
+          end_block,
+          max_per_tx,
+          token_name
+    lock:
+      code: RGB_lock
+      args: btc_utxo#1
 ```
 
-注意：这里需要同步发出一笔 bitcoin 交易，满足
+上面的例子中，在[start_block, end_block] 区间发起的交易，任何人都可以在 BTC L1 上实现公平发射发行，以平等的机会获得代币。
 
-- `BTC_TX.commitment = hash(N_i | N_o | CKB_TX.inputs[:N_i] | CKB_TX.outputs_sub[:N_o])`
-    - 注意这里要兼容前面的 `RGB_Lock.commit` 的内容规定
-- `CKB_TX.outputs[RGB_CELL_i].lockargs.utxo == BTC_TX.outputs[i]`
+## L2 发行后跳转到 L1
 
-**但注意，这个动作中的约束不是强制的**，就是任何人都可以发一个这样的 rgb cell，或者btc commitment，但是：
-
-- 如果 commitment 对不上，这个创建的 rgb cell 在后续无法花费
-- 不可能存在两个交易生成的 rgb cell 与一个 btc 对应（因为他们的 ckb.input 不相同）
-
-## 第一笔 RGB++ 资产发行
-
-与 [L2 → L1 Jump 操作](https://www.notion.so/L2-L1-Jump-e9562b5b6cc24861a86f758c8e04ddd6?pvs=21) 完全相同，不同点在于
-
-- 你可以可选地使用特殊的 input.lock 来约束发币行为。参考 [RGB++ 首个 coin 发行服务需求](https://www.notion.so/RGB-coin-7ef49352d7264f2c97cd5f810da2fdc0?pvs=21)
-- 未来生成的链外 CSV 证明不同（前者的证明链条类似 BTC-CKB-BTC 这种），后者只会有 CKB-BTC
-
-第一笔资产发行中，针对 `BTC_TX.commitment` 的约束不必要出现在脚本约束中，用户构造交易时满足即可。因为如果交易发起方作恶，没有按照规则填写 commitment，后续生成 RGB_Cell 由于需要验证上一笔交易，就会出错无法验证
-
-# 其他问题
-
-## 手续费问题
-
-考虑一笔 RGB++ L1 交易，用户使用 Bitcoin 钱包（不论是 unisat 还是 joyid 的 btc 签名器）发起一笔交易，此时需要先
-
-- 构造一笔虚拟 CKB 交易，记为 RAW_CKB_TX
-- 发起与之对应的 BTC 交易，记为 BTC_TX，此时需要用户支付足够的 bitcoin 手续费，以及为接受者提供一个或多个 UTXO（有最小值，例如 536 sat）
-- 发起与之对应的 CKB 交易，此时需要支付 CKB 的手续费，以及**为接受者提供一个或多个 Cell**
-
-### 自有 CKB
-
-用户需要在 BTC 钱包内拥有足额 Bitcoin，同时在自己管理的一个 CKB 钱包中，拥有足额的 CKB。
-
-- 构造 RAW_CKB_TX 时，在 input 位置加入自己的 capacity cell，output 加入找零
-- 发起 Bitcoin 交易后，除了构造 witness 用于解锁 RGB_lock，也需要签名上面的 capacity cell，用来解锁这些 input cell
-    - 用户只能在 JoyID 中操作，需要按两次指纹
-
-### 代付 CKB
-
-用户只需要在 BTC 钱包内拥有足额 Bitcoin
-
-- 构造 RAW_CKB_TX 时，先不考虑 capacity，构造 PRE_CKB_TX，发送给 paymaster
-- paymaster 增加部分 input output 后，返回
-    - RAW_CKB_TX 的内容（output.lockarg.btc_utxo 除外）
-    - paymaster 的 btc_address, btc_amount
-    - 对交易 RAW_CKB_TX 的签名
-        - 考虑到 RAW_CKB_TX 不是完整的待签交易，因此 paymaster 使用的 lock 也需要是相对**特殊的 lock**
-- 构造 BTC_TX，输出位置增加 UTXO(btc_address, btc_amount)，并签名
-- 发起 Bitcoin 交易后，构造 witness 用于解锁 RGB_lock，并提供 paymaster 的 cell 的签名，即可完成上链
-
-**注：考虑到代付系统的复杂性，似乎用户始终使用自有 CKB 是个更好的解决方案**
-
-## 状态异常
-
-考虑异常问题，例如用户构造了 CKB 上的交易（不含 lock 参数中的`%bitcoin_tx%`），然后发起了 BTC 交易，获得 `%bitcoin_tx%` 后，发起 CKB 交易。这个过程中，分别考虑五种情况：
-
-1. BTC 交易被 reorg 又重新被打包入块
-2. CKB 交易被 reorg 又重新被打包入块
-3. CKB 交易被双花替代
-4. BTC 交易被双花替代
-5. BTC CKB 交易被同时双花替代
-
-### 区块分叉无双花（1，2）
-
-由于交易的确定性，1，2 情况不会影响用户资产和后续交易。
-
-### CKB 交易双花（3）
-
-对于 L1，L1→L2 的 RGB++  交易均存在同构绑定，CKB 交易事实上是被 BTC 交易定死了，不可能出现双花替代的情况。
-
-**对于 L2→L1 的交易，**不存在同构绑定，用户在 CKB 上发起交易后，如果 CKB 交易被 revert，则原有的 Bitcoin_utxo 对应的 CKB Cell 就不存在了。后续交易无法构造，用户只需要等待 24 个 CKB 区块即可确认不会出现 reorg，这样就不会造成安全性问题。
-
-### BTC 交易被双花替代（4）
-
-对于 L1 交易：由于收款方的 utxo 由发送方的同构绑定 bitcoin utxo 提供。一旦 btc 交易被 revert，事实上后续相关的所有 utxo 在 CKB 上都无法解锁，造成资产锁定。对于攻击者来说属于损人不利己。假设这种问题不会出现，即使出现也不影响第三方
-
-对于 L1→L2 交易，一旦 btc 交易被 revert，CKB 上就会出现两个对应绑定的交易，造成双花。此时我们通过引入 **BTC_TIME_lock** 强制要求 L2 的资产在 BTC 交易后的 6 个区块才能使用。届时，如果相关 BTC 交易被 revert 了，资产也无法使用。
-
-### BTC CKB 交易被同时双花替代（5）
-
-规则允许
+比较简单，也更灵活，不再赘述。
