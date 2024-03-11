@@ -1,6 +1,7 @@
 # RGB++ 合约规范
 
 Authors: Cipher Wang, JJY
+
 Contributors: CyberOrange, Ian, Jan
 
 # 概述
@@ -73,7 +74,7 @@ RGB_lock:
   code_hash: 
     RGB_lock
   args:
-      out_index | %bitcoin_tx%
+    out_index | %bitcoin_tx%
 ```
 
 - RGB_lock:
@@ -99,6 +100,8 @@ BTC_TIME_lock:
 </aside>
 
 **Cell 解锁验证流程**
+
+![uib](./assets/lock-verify.png)
 
 - 存在一个与当前 CKB TX 对应的 `btc_tx`，它满足：
     - 包含在 CKB 上的 BTC 轻客户端中
