@@ -108,7 +108,7 @@ BTC_TIME_lock:
     - inputs 中包含一个与要解锁的 cell.lock 对应的 btc utxo input，即  `btc_tx.inputs[i] == previous_bitcoin_tx | out_index`
     - outputs 中有且仅有一个 OP_RETURN，包含 `commitment`
     - `self.lockargs.%new_bitcoin_tx% = btc_tx`
-- 该 `commitment`为一下内容的 hash，算法为 `double sha256(”RGB++” | messages)`
+- 该 `commitment`为以下内容的 hash，算法为 `double sha256(”RGB++” | messages)`
   - `version: u16`，必须为 0
   - `inputs_len:u8`
     - 表示 commitments 包含前 n 个 inputs

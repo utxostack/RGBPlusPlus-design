@@ -141,7 +141,7 @@ Transferring RGB++ coins is a straightforward process, involving mapping the rec
 
 The xUDT protocol is a transparent token protocol. To enhance the privacy-preserving features of RGB++ coins, we can explore token protocols that offer both amount privacy and flow privacy. For instance, the bulletproof algorithm can be employed to transform the content in data into a blinded amount, with a zero-knowledge proof demonstrating the consistency and non-negativity of the amount in each transfer transaction. This ensures that only the parties involved in a transaction possess knowledge of the specific amount in the transaction, preventing third-party observers from accessing the date of amount.
 
-Additionally, ring signatures can be used torealize the blinding of the transfer flow. The user's coins are transferred to the ring signature obfuscator on CKB and then redirected back to the address managed by the Bitcoin UTXO. This strategy hides the historical trace of capital flow(切断资金流的历史轨迹), thereby achieving enhanced privacy protection for the address.
+Additionally, ring signatures can be used to realize the blinding of the transfer flow. The user's coins are transferred to the ring signature obfuscator on CKB and then redirected back to the address managed by the Bitcoin UTXO. This strategy hides the historical trace of capital flow(切断资金流的历史轨迹), thereby achieving enhanced privacy protection for the address.
 
 # NFTs
 
