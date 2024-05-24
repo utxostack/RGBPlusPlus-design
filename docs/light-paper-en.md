@@ -57,7 +57,7 @@ Also, users also have the option not to use the transactions on the CKB chain as
 
 ![tx-general](./assets/wp-tx-general.png)
 
-### **Off-chain Computation** 链外计算
+### **Off-chain Computation**
 
 - Select the next **Single-Use Seals to be used**, e.g. btc_utxo#2;
 - Perform off-chain computation to generate an RGB++ transaction (**`CKB_TX_B`**) that will be sent to the CKB;
@@ -65,7 +65,7 @@ Also, users also have the option not to use the transactions on the CKB chain as
 
 ### **BTC Transaction Submission**
 
-Generate and broadcast a Bitcoin transaction (**`Bitcoin_TX_A`**), input **`btc_utxo#1`** for consumption,  outputting the above commitment via OP_RETURN  (输出通过 OP_RETURN 加入上面的 commitment).
+Generate and broadcast a Bitcoin transaction (**`Bitcoin_TX_A`**), input **`btc_utxo#1`** for consumption,  outputting the above commitment via OP_RETURN.
 
 ### CKB Transaction Submission
 
@@ -132,7 +132,7 @@ There are many ways to issue fungible assets on RGB++, including but not limited
 
 ## **Transfer**
 
-Transferring RGB++ coins is a straightforward process, involving mapping the recipient and remaining UTXO balances(找零 utxo ) to the shadow cell of CKB. Also, transferring coins can be streamlined exclusively on CKB through transaction foldings. After multiple transactions are completed, the final results will be committed to BTC.
+Transferring RGB++ coins is a straightforward process, involving mapping the recipient and remaining UTXO balances to the shadow cell of CKB. Also, transferring coins can be streamlined exclusively on CKB through transaction foldings. After multiple transactions are completed, the final results will be committed to BTC.
 
 ![transfer](./assets/wp-transfer.png)
 
@@ -141,13 +141,13 @@ Transferring RGB++ coins is a straightforward process, involving mapping the rec
 
 The xUDT protocol is a transparent token protocol. To enhance the privacy-preserving features of RGB++ coins, we can explore token protocols that offer both amount privacy and flow privacy. For instance, the bulletproof algorithm can be employed to transform the content in data into a blinded amount, with a zero-knowledge proof demonstrating the consistency and non-negativity of the amount in each transfer transaction. This ensures that only the parties involved in a transaction possess knowledge of the specific amount in the transaction, preventing third-party observers from accessing the date of amount.
 
-Additionally, ring signatures can be used to realize the blinding of the transfer flow. The user's coins are transferred to the ring signature obfuscator on CKB and then redirected back to the address managed by the Bitcoin UTXO. This strategy hides the historical trace of capital flow(切断资金流的历史轨迹), thereby achieving enhanced privacy protection for the address.
+Additionally, ring signatures can be used to realize the blinding of the transfer flow. The user's coins are transferred to the ring signature obfuscator on CKB and then redirected back to the address managed by the Bitcoin UTXO. This strategy hides the historical trace of capital flow, thereby achieving enhanced privacy protection for the address.
 
 # NFTs
 
 ## Issuance
 
-Issuing NFT assest on RGB++ can also utilize existing CKB NFT standards, including but not limited to the [Spore Protocol](https://spore.pro/), mNFT, and [CoTA protocol](https://talk.nervos.org/t/rfc-cota-a-compact-token-aggregator-standard-for-extremely-low-cost-nfts-and-fts/6338). Taking Spore Protocol as an example, it stores all metadata on-chain, achieving 100% security in data availability. The CoTA protocol, on the other hand, is a compact token aggregator standard which compresses NFT information and holds data in 32-byte SMTs, providing ultimate cost advantages.
+Issuing NFT assets on RGB++ can also utilize existing CKB NFT standards, including but not limited to the [Spore Protocol](https://spore.pro/), mNFT, and [CoTA protocol](https://talk.nervos.org/t/rfc-cota-a-compact-token-aggregator-standard-for-extremely-low-cost-nfts-and-fts/6338). Taking Spore Protocol as an example, it stores all metadata on-chain, achieving 100% security in data availability. The CoTA protocol, on the other hand, is a compact token aggregator standard which compresses NFT information and holds data in 32-byte SMTs, providing ultimate cost advantages.
 
 ## **Transfer**
 
