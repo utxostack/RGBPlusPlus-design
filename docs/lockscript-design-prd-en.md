@@ -8,7 +8,7 @@ Contributors: CyberOrange, Ian, Jan
 
 ## Requirements and Limitations on Isomorphic Binding
 
-Isomorphic Binding requires that RGB++ transactions must be submitted on BTC chain, and that the user use single-use seals on BTC to describe the operation on RGB++ cells. The user needs to construct the CKB raw tx and the RGB++ commitment first, then submit the commitment to BTC, and finally upload the CKB TX on-chain. 
+Isomorphic Binding requires that RGB++ transactions must be submitted on BTC chain, and that the user use single-use seals on BTC to describe the operation on RGB++ cells. The user needs to construct the CKB raw tx and the RGB++ commitment first, then submit the commitment to BTC, and finally send the CKB TX on-chain. 
 
 However, there are some constraints:
 
