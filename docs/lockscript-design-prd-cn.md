@@ -19,17 +19,17 @@ Contributors: CyberOrange, Ian, Jan
 
 # 合约需求
 
-需要如下合约，
+需要如下合约：
 
-- RGBPP_lock 用来处理与 RGB++ Cell 的解锁
-- BTC_TIME_lock 时间锁，当用户资产从 L1 jump 到 L2 时必须使用该 Lock 锁定一定区块数
+- RGBPP_lock 用来处理与 RGB++ Cell 的解锁；
+- BTC_TIME_lock 时间锁，当用户资产从 L1 leap 到 L2 时必须使用该 Lock 锁定一定区块数。
 
 ## 合约的 Config Cell
 
 RGBPP_lock / BTC_TIME_lock 合约需要读取轻节点，因此我们必须保存相关合约的 type_hash。由于不希望引入硬编码的合约依赖，我们引入 Config Cell 的概念来解决此类配置问题。
 
 
-部署合约时要求合约输出以及 Config Cell输出都在同一笔交易内完成部署。
+部署合约时要求合约输出以及 Config Cell 输出都在同一笔交易内完成部署。
 
 ```yaml
 # BTC_TIME_lock
@@ -63,7 +63,7 @@ struct RGBPPConfig {
   bitcoin_time_lock_type_hash: Byte32,
 }
 ```
-每次更新合约都必须和 Config Cell一起更新，并且遵守更新规则。
+每次更新合约都必须和 Config Cell 一起更新，并且遵守更新规则。
 
 ## 合约数据结构
 
@@ -184,7 +184,7 @@ output:
       args: out_index = 2 | %new_bitcoin_tx%
 ```
 
-## L1 → L2 Jump 操作
+## L1 → L2 Leap 操作
 
 **定义：CKB 上输入的资产 cell 的 lock 均为 RGB lock，输出的资产 cell 的 lock 至少一个或全部为 BTC_TIME_lock，其余为 RGBPP_lock**
 
@@ -244,7 +244,7 @@ witness:
   # proof of 6 confirmations after #btx_tx
 ```
 
-## L2 → L1 Jump 操作
+## L2 → L1 Leap 操作
 
 **定义：输入侧没有 RGB_lock，输出侧有 RGBPP_lock**
 
