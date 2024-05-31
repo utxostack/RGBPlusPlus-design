@@ -154,7 +154,7 @@ lock.args: lock_hash | after | %new_bitcoin_tx%
 
 ## **L1 Transfers/Operations**
 
-**Definition**: `RGBPP_lock` refers to input and output asset cells on CKB where `type` ≠ null.
+**Definition**: The locks of `non-null asset type` inputs and outputs in a CKB transaction are all RGBPP_lock.
 
 ```
 # BTC_TX
