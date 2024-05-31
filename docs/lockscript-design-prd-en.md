@@ -48,7 +48,7 @@ outputs:
 ...
 ```
 
-Follow these steps to identify Config Cell in the contract:
+The contract follows these steps to identify Config Cell:
 
 ```
 1. Use load_script to retrieve the type_hash of the current contract;
