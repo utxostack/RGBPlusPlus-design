@@ -1,4 +1,4 @@
-# RGB++ Contract Specification
+# RGB++ Script Standard
 
 Authors: Cipher Wang, JJY
 
