@@ -97,7 +97,7 @@ BTC_TIME_lock:
 
 ## **RGBPP_Lock Unlock Logic**
 
-💡 For Cell of  the RGB++ Asset on L1 Address (`btc_utxo`)
+💡 For Cell of the RGB++ Asset on L1 Address (`btc_utxo`)
 
 ### **Cell Unlock Validation Process**
 
