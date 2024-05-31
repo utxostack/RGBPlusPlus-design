@@ -110,7 +110,7 @@ The process for unlocking involves providing a `btc_tx` with the RGB++ commitmen
 - Outputs must contain only one `OP_RETURN`, which include `commitment`.
 - `self.lockargs.%new_bitcoin_tx% = btc_tx`.
 
-The `commitment` is created using the `double sha256("RGB++" | messages)` method, and should satisfy the following rules :
+The `commitment` is created using the `double sha256("RGB++" | messages)` method, and should satisfy the following rules:
 
 - `version: u16` should always be 0;
 - `inputs_len: u8`:
