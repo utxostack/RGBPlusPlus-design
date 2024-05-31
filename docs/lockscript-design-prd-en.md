@@ -315,7 +315,7 @@ output:
 
 ### **Inter-block issuance**
 
-Inter-block issuance involves altering the issuance mode of an extensible User-Defined Token ([xUDT](https://talk.nervos.org/t/rfc-extensible-udt/5337)) from `lock` to `type`. This means creating a new xUDT or plugin so that the type.args of the issued xUDT, specifically the asset ID is lockhash but instead the parameter of some BTC-based chain.
+Inter-block issuance involves altering the issuance mode of an extensible User-Defined Token ([xUDT](https://talk.nervos.org/t/rfc-extensible-udt/5337)) from `lock` to `type`. This means that the new xUDT's type.args (a.k.a. asset ID) is not lock_hash but some parameters on the BTC chain.
 
 ```
 # BTC TX
