@@ -229,7 +229,7 @@ output:
 
 After enough BTC blocks have been confirmed, the `BTC_TIME_lock` cells can be unlocked. 
 
-> Note: Each output corresponding to a `BTC_TIME_lock` input must have an unlock cell where all fields except for the lock status should remain unchanged.
+> Note: Each output corresponding to a `BTC_TIME_lock` input must have an unlocked cell where all fields should remain unchanged from the input except for the lock field.
 > 
 
 ```
