@@ -29,7 +29,7 @@ Contributors: CyberOrange, Ian, Jan
 RGBPP_lock / BTC_TIME_lock 合约需要读取轻节点，因此我们必须保存相关合约的 type_hash。由于不希望引入硬编码的合约依赖，我们引入 Config Cell 的概念来解决此类配置问题。
 
 
-部署合约时，要求 contract code cell 和 Config cell 在同一笔交易的 outputs 内完成创建。
+部署合约时，要求 contract code cell 和 config cell 在同一笔交易的 outputs 内完成创建。
 
 ```yaml
 # BTC_TIME_lock
@@ -276,7 +276,7 @@ output:
 
 ### 直接发行
 
-用户需要首先构造一个使用特定 utxo 做 lock 的 cell，作为发行人。该步骤无须经过同构绑定，后即可用这个 cell 进行一次性发行。
+发行人需要先构造一个使用特定 BTC UTXO 作为 RGBPP_lock 的 issue_cell。该步骤无须经过同构绑定，后即可用这个 cell 进行一次性发行。
 
 ```yaml
 # BTC TX
