@@ -253,7 +253,9 @@ witness:
 
 ## **L2 → L1 Leap**
 
-**Definition**: Input side has no `RGB_lock`, while output side has `RGBPP_lock`.
+**Definition**: No RGBPP_lock in the transaction Inputs, while Outputs has RGBPP_lock.
+
+
 
 ```
 # CKB TX
