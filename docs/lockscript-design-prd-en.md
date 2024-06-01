@@ -30,7 +30,7 @@ The following contract is required:
 
 Both the `RGBPP_lock` and `BTC_TIME_lock` require the [BTC light client](https://github.com/ckb-cell/ckb-bitcoin-spv-contracts/blob/master/contracts/ckb-bitcoin-spv-type-lock/README.md) data, necessitating the storage of the associated contract's `type_hash`. To avoid hardcoded dependencies, the concept of Config Cell is introduced here to address this configuration issue.
 
-When deploying a contract, it is required that both the contract output and the Config Cell output be included within the same transaction.
+When deploying a contract, both the `contract code cell` and the `config cell` must be included in the same transaction's outputs.
 
 ```
 # BTC_TIME_lock
