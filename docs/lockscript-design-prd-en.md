@@ -286,7 +286,7 @@ To issue RGB++ assets using Bitcoin's Layer 1, the issuer must initiate a bitcoi
 
 ### **Direct Issuance**
 
-An issuer needs to create a specific UTXO as the cell of a lock. This step bypasses isomorphic binding, allowing the cell to be used for a one-time issuance.
+An issuer needs to create a specific UTXO as an issue_cell lock. The issue_cell will then be used for a one-time issuance.
 
 ```
 # BTC TX
