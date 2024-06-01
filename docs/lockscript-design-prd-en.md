@@ -192,9 +192,9 @@ output:
 
 ## L1 → L2 Leap
 
-**Definition**: On CKB, the lock for input asset cell is`RGB_lock`. For output assets cell, the lock configuration includes at least one, or possibly all, being `BTC_TIME_lock`; while the remaining output asset cells use`RGBPP_lock`.
+**Definition**: On CKB, the lock for input asset cell is `RGB_lock`. For output asset cells, at least one, and possibly all, will be `BTC_TIME_lock`; while the remaining output asset cells use `RGBPP_lock`.
 
- `BTC_TIME_lock`, as a new type of timelock on CKB, is introduced here.
+`BTC_TIME_lock`, as a new type of timelock on CKB, is introduced here.
 
 ```
 # BTC_TX
