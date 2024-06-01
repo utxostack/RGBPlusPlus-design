@@ -9,4 +9,4 @@ Documents list:
 | # | EN | CN |
 | -- | -- | -- |
 | 00 | [RGB++ Protocol Whitepaper Draft](./docs/light-paper-en.md) | [RGB++ 协议白皮书草案](./docs/light-paper-cn.md) |
-| 01 | [RGB++ Script Standard](.docs/lockscript-design-prd-en.md) | [RGB++ 合约规范](./docs/lockscript-design-prd-cn.md) |
+| 01 | [RGB++ Script Standard](./docs/lockscript-design-prd-en.md) | [RGB++ 合约规范](./docs/lockscript-design-prd-cn.md) |
