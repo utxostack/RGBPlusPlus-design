@@ -101,7 +101,7 @@ BTC_TIME_lock:
 
 ### **Cell Unlock Validation Process**
 
-![image](docs/assets/lock-verify.png)
+![uib](./assets/lock-verify.png)
 
 The process for unlocking involves providing a `btc_tx` with the RGB++ commitment:
 
