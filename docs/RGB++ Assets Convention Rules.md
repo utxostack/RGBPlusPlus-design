@@ -26,7 +26,7 @@ standards regarding uniqueness and length.
 }
 ```
 
-## Name Confliction
+## Name Conflict
 - Only the first occurrence of an asset name on-chain is acknowledged; subsequent occurrences are marked as “duplicate”.
 - Case sensitivity is ignored during duplicate comparison, for example: “Seal” is considered the same as “SEAL”.
 - Any addition of invisible characters (including spaces) to the name, regardless of whether there are similar assets,
