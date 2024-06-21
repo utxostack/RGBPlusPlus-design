@@ -1,4 +1,4 @@
-This document is a repost of  [_xUDT Information Convention RFC_](https://talk.nervos.org/t/xudt-information-convention-rfc/8030)  post on NervosTalk forum, 
+> This document is a repost of  [_xUDT Information Convention RFC_](https://talk.nervos.org/t/xudt-information-convention-rfc/8030)  post on NervosTalk forum, 
 with a few refinements for greater consistency and readability.
 
 ## Background
@@ -62,5 +62,5 @@ Ecosystem apps should add label / mark for every asset to provide some critical 
 - Issuance mark: `L1 issue` / `L2 issue` to identify where the coins are issued, on Bitcoin with `rpgpp_lock` or CKB with normal lock;
 - Supply mark: `Limited supply` / `Unlimited supply` to identify whether a coin could be issued arbitrarily.
 
-  _Note: The issue (For Support tags of xudt #620)[https://github.com/Magickbase/ckb-explorer-public-issues/issues/620] defines the
-  existing tags and display of xUDTs on the CKB Explorer._
+  > Note: The [issue For Support tags of xudt #620](https://github.com/Magickbase/ckb-explorer-public-issues/issues/620) defines the
+  existing tags and display of xUDTs on the CKB Explorer.
