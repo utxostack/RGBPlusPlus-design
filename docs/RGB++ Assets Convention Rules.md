@@ -47,7 +47,7 @@ standards regarding uniqueness and length.
 
 ## Length Range
 - Only assets with Symbol length of 4-5 characters are processed normally.
-Assets falling outside this range are treated as “duplicate assets”.
+- Assets falling outside this range are treated as “duplicate assets”.
 
 ## Verification
 - Whitelisted assets are set to bypass the rules mentioned above.
@@ -59,5 +59,8 @@ Assets falling outside this range are treated as “duplicate assets”.
 
 ## Assets Mark
 Ecosystem apps should add label / mark for every asset to provide some critical information:
-- Issuance mark: `L1 issue` / `L2 issue` to identify where the coins are issued, on Bitcoin with `rpgpp_lock` or CKB with normal lock
+- Issuance mark: `L1 issue` / `L2 issue` to identify where the coins are issued, on Bitcoin with `rpgpp_lock` or CKB with normal lock;
 - Supply mark: `Limited supply` / `Unlimited supply` to identify whether a coin could be issued arbitrarily.
+
+  _Note: The issue (For Support tags of xudt #620)[https://github.com/Magickbase/ckb-explorer-public-issues/issues/620] defines the
+  existing tags and display of xUDTs on the CKB Explorer._
