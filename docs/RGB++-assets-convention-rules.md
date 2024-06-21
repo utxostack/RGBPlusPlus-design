@@ -1,5 +1,5 @@
-> This document is a repost of  [_xUDT Information Convention RFC_](https://talk.nervos.org/t/xudt-information-convention-rfc/8030)  post on NervosTalk forum, 
-with a few refinements for greater consistency and readability.
+> This document is a repost of _[_xUDT Information Convention RFC_](https://talk.nervos.org/t/xudt-information-convention-rfc/8030)_
+> post on NervosTalk forum, with minor refinements for improved consistency and readability.
 
 ## Background
 
