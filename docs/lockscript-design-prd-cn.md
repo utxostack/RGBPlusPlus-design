@@ -129,7 +129,7 @@ BTC_TIME_lock:
 **tips**
 
 - inputs_len / outputs_len 可以由最后一个有 type 的 input / output cell 的位置计算出
-- commitment 至少包含一个 input, 即使所有 inputs 的 type 都为空
+- commitment 至少包含一个 input 和 output, 即使所有 inputs 和 outputs 的 type 都为空
 - SDK 可以修改 commitment 之外的 cells 调整手续费
 
 ## BTC_TIME_lock 解锁逻辑

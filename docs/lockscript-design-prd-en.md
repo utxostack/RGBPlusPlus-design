@@ -135,7 +135,7 @@ The remaining assets in the transaction is secured by the RGB++ Lock. All output
 Tips:
 
 - `inputs_len` and `outputs_len` can be calculated by the position of the last input or output cell with a `type` ;
-- The commitment must include at least one input, even if all input `type` are null;
+- The commitment must include at least one input and one output, even if all input `type` and output `type` are null;
 - SDKs can alter cells outside of the commitment to adjust the transaction fee.
 
 ## **BTC_TIME_lock Unlock Logic**
