@@ -1,6 +1,6 @@
 # RGB++ Protocol Light Paper (Draft)
 
-*Cipher from CELL Studio & Nervos Foundation*
+*Cipher from CELL Studio*
 
 > Special thanks to [Ajian](https://twitter.com/AurtrianAjian), [cyberorange](https://twitter.com/xcshuan), [Jan](https://twitter.com/busyforking), [Shawn](https://twitter.com/ShawnMelUni), and [DaPangDun](https://twitter.com/DaPangDunCrypto) for feedback and discussion.
 
